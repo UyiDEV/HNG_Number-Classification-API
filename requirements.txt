@@ -1,4 +1,4 @@
 Flask
 flask-cors
+requests
 gunicorn
-Werkzeug==2.1.2
