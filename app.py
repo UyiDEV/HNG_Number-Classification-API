@@ -60,7 +60,7 @@ def classify_number():
     try:
         num = int(number)
     except ValueError:
-        return jsonify({"number": number, "error": True}), 400
+        return jsonify({"number": number, "error": True}), 200
 
     prime = is_prime(num)
     perfect = is_perfect(num)
