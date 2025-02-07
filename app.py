@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 import math
 import requests
+import json
 
 app = Flask(__name__)
 CORS(app)
@@ -43,13 +44,16 @@ def calculate_digit_sum(n):
 def fetch_fun_fact(n):
     try:
         response = requests.get(f"http://numbersapi.com/{n}/math?json")
-        if response.status_code == 200:
+        response.raise_for_status()
+
+        try:
             data = response.json()
             return data.get("text", "No fun fact available.")
-        else:
-            return "No fun fact available."
-    except requests.exceptions.RequestException:
-        return "Error fetching fun fact."
+        except json.JSONDecodeError:
+            return "Error: Invalid JSON response from fun fact API"
+
+    except requests.exceptions.RequestException as e:
+        return f"Error fetching fun fact: {e}"
 
 @app.route('/api/classify-number', methods=['GET'])
 def classify_number():
