@@ -54,33 +54,27 @@ def fetch_fun_fact(n):
 @app.route('/api/classify-number', methods=['GET'])
 def classify_number():
     number = request.args.get('number')
-
     if not number:
-        return jsonify({"error": "Number parameter is required"}), 400
+        return jsonify({"error": "Number parameter is required"}),
 
     try:
-        num = float(number)  
+        num = int(number)
     except ValueError:
-        return jsonify({"number": number, "error": True}), 400
+        return jsonify({"number": number, "error": True}),
 
-    if math.isnan(num) or math.isinf(num): 
-        return jsonify({"number": number, "error": True}), 400
-
-
-    prime = is_prime(int(abs(num))) if num.is_integer() else False
-    perfect = is_perfect(int(abs(num))) if num.is_integer() else False 
-    armstrong = is_armstrong(int(abs(num))) if num.is_integer() else False 
-    digit_sum = calculate_digit_sum(int(abs(num))) if num.is_integer() else None 
+    prime = is_prime(num)
+    perfect = is_perfect(num)
+    armstrong = is_armstrong(num)
+    digit_sum = calculate_digit_sum(num)
     properties = []
     if armstrong:
         properties.append("armstrong")
-    if num % 2 != 0 and num.is_integer():
+    if num % 2 != 0:
         properties.append("odd")
-    elif num % 2 == 0 and num.is_integer():
+    else:
         properties.append("even")
 
-    fun_fact = fetch_fun_fact(int(num)) if num.is_integer() else "Fun facts are only available for integers"
-
+    fun_fact = fetch_fun_fact(num)
 
     return jsonify({
         "number": num,
@@ -89,8 +83,7 @@ def classify_number():
         "properties": properties,
         "digit_sum": digit_sum,
         "fun_fact": fun_fact
-    }), 200
-
+    })
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
