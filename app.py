@@ -55,12 +55,12 @@ def fetch_fun_fact(n):
 def classify_number():
     number = request.args.get('number')
     if not number:
-        return jsonify({"error": "Number parameter is required"}), 200
+        return jsonify({"error": "Number parameter is required"}),
 
     try:
         num = int(number)
     except ValueError:
-        return jsonify({"number": number, "error": True}), 200
+        return jsonify({"number": number, "error": True}),
 
     prime = is_prime(num)
     perfect = is_perfect(num)
