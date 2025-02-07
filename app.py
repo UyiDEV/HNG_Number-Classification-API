@@ -33,13 +33,17 @@ def is_perfect(n):
     return s == n
 
 def is_armstrong(n):
+    if n < 0:  # Handle negative numbers correctly
+        n = abs(n)
     num_str = str(n)
     num_digits = len(num_str)
     sum_of_powers = sum(int(digit)**num_digits for digit in num_str)
     return sum_of_powers == n
 
 def calculate_digit_sum(n):
-    return sum(int(digit) for digit in str(abs(n)))
+    if n < 0:  # Handle negative numbers correctly
+        n = abs(n)
+    return sum(int(digit) for digit in str(n))
 
 def fetch_fun_fact(n):
     try:
