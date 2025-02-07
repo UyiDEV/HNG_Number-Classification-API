@@ -55,7 +55,7 @@ def fetch_fun_fact(n):
 def classify_number():
     number = request.args.get('number')
     if not number:
-        return jsonify({"error": "Number parameter is required"}), 400
+        return jsonify({"error": "Number parameter is required"}), 200
 
     try:
         num = int(number)
