@@ -58,4 +58,4 @@ Place this configuration in /etc/nginx/conf.d/your_app.conf and restart Nginx:
 sudo systemctl restart nginx.
 ```
 
-Get your EC2 Public IP or DNS: You can find this in the EC2 console. Use this to access your API: http://54.210.213.250/api/classify-number?number=371
+Get your EC2 Public IP or DNS: You can find this in the EC2 console. Use this to access your API: http://54.235.25.225/api/classify-number
