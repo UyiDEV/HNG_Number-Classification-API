@@ -1,103 +1,68 @@
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-import math
 import requests
 
-app = FastAPI(title="Number Classification API")
+app = FastAPI()
 
-# Enable CORS (customize origins as needed for production)
+# Adding CORS Middleware to allow cross-origin requests
+origins = ["*"]  # This allows all origins; you can restrict this in production
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins (for development)
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-def is_prime(n: int) -> bool:
-    if n <= 1:
+def is_prime(number: int) -> bool:
+    if number <= 1:
         return False
-    if n <= 3:
-        return True
-    if n % 2 == 0 or n % 3 == 0:
-        return False
-    i = 5
-    while i * i <= n:
-        if n % i == 0 or n % (i + 2) == 0:
+    for i in range(2, int(number ** 0.5) + 1):
+        if number % i == 0:
             return False
-        i += 6
     return True
 
-def is_perfect(n: int) -> bool:
-    if n <= 1:
-        return False
-    s = 1
-    for i in range(2, int(math.sqrt(n)) + 1):
-        if n % i == 0:
-            s += i
-            if i * i != n:
-                s += n // i
-    return s == n
+def is_perfect(number: int) -> bool:
+    divisors = [i for i in range(1, number) if number % i == 0]
+    return sum(divisors) == number
 
-def is_armstrong(n: int) -> bool:
-    if n < 0:
-        n = abs(n)
-    num_str = str(n)
-    num_digits = len(num_str)
-    sum_of_powers = sum(int(digit)**num_digits for digit in num_str)
-    return sum_of_powers == n
+def is_armstrong(number: int) -> bool:
+    digits = list(map(int, str(number)))
+    power = len(digits)
+    return number == sum([digit ** power for digit in digits])
 
-def calculate_digit_sum(n: int) -> int:
-    if n < 0:
-        n = abs(n)
-    return sum(int(digit) for digit in str(n))
-
-def fetch_fun_fact(n: int) -> str:
-    try:
-        response = requests.get(f"http://numbersapi.com/{n}/math?json")
-        response.raise_for_status()  # Check for HTTP errors
-
-        try:
-            data = response.json()
-            return data.get("text", "No fun fact available.")
-        except (requests.exceptions.JSONDecodeError, json.JSONDecodeError):  # Handle JSON errors
-            return "Error: Invalid JSON response from fun fact API"
-    except requests.exceptions.RequestException as e:
-        return f"Error fetching fun fact: {e}"
+def get_fun_fact(number: int) -> str:
+    url = f"http://numbersapi.com/{number}?json"
+    response = requests.get(url).json()
+    return response.get('text', 'No fun fact available')
 
 @app.get("/api/classify-number")
-async def classify_number(number: str = Query(..., description="The number to classify")):
+async def classify_number(number: str):
     try:
-        num = float(number)
+        num = int(number)  # Input validation
     except ValueError:
         raise HTTPException(status_code=400, detail={"number": number, "error": True})
 
-    if math.isnan(num) or math.isinf(num):
-        raise HTTPException(status_code=400, detail={"number": number, "error": True})
-
-
-    is_integer = num.is_integer()
-
-    prime = is_prime(int(abs(num))) if is_integer else False
-    perfect = is_perfect(int(abs(num))) if is_integer else False
-    armstrong = is_armstrong(int(abs(num))) if is_integer else False
-    digit_sum = calculate_digit_sum(int(abs(num))) if is_integer else None
+    # Determine properties
     properties = []
-    if armstrong:
+    if is_armstrong(num):
         properties.append("armstrong")
-    if is_integer:
-        if num % 2 != 0:
-            properties.append("odd")
-        else:
-            properties.append("even")
+    if num % 2 == 0:
+        properties.append("even")
+    else:
+        properties.append("odd")
 
-    fun_fact = fetch_fun_fact(int(num)) if is_integer else "Fun facts are only available for integers"
-
-    return {
+    # Prepare the response JSON
+    response_data = {
         "number": num,
-        "is_prime": prime,
-        "is_perfect": perfect,
+        "is_prime": is_prime(num),
+        "is_perfect": is_perfect(num),
         "properties": properties,
-        "digit_sum": digit_sum,
-        "fun_fact": fun_fact
+        "digit_sum": sum([int(digit) for digit in str(num)]),
+        "fun_fact": get_fun_fact(num)
     }
+
+    return JSONResponse(content=response_data)
+
+
