@@ -51,52 +51,22 @@ def fetch_fun_fact(n):
     except requests.exceptions.RequestException:
         return "Error fetching fun fact."
     
-@app.route('/api/classify-number', methods=['GET'])
-def classify_number():
-    number = request.args.get('number')
-    if not number:
-        return jsonify({"error": "Number parameter is required"}), 400
-
-    try:
-        # Convert to float first to handle decimal numbers
-        num = float(number)
-        # Convert to int if it's a whole number
-        if num.is_integer():
-            num = int(num)
-    except ValueError:
-        return jsonify({"error": "Invalid number format"}), 400
-
-    # Handle only integer operations for certain functions
-    if isinstance(num, int):
-        prime = is_prime(abs(num)) if num != 0 else False
-        perfect = is_perfect(abs(num)) if num > 0 else False
-        armstrong = is_armstrong(abs(num)) if num > 0 else False
-    else:
-        prime = False
-        perfect = False
-        armstrong = False
-
-    digit_sum = calculate_digit_sum(num)
+@app.get("/api/classify-number")
+def classify_number(number: int):
     properties = []
-    
-    if armstrong:
+    if is_armstrong(number):
         properties.append("armstrong")
-    if num % 2 != 0:
-        properties.append("odd")
-    else:
-        properties.append("even")
+    properties.append("even" if number % 2 == 0 else "odd")
 
-    fun_fact = fetch_fun_fact(int(num) if num.is_integer() else round(num))
-
-    return jsonify({
-        "number": num,
-        "is_prime": prime,
-        "is_perfect": perfect,
+    return {
+        "number": number,
+        "is_prime": is_prime(number),
+        "is_perfect": is_perfect(number),
         "properties": properties,
-        "digit_sum": digit_sum,
-        "fun_fact": fun_fact
-    }), 200
-
+        "digit_sum": sum(int(digit) for digit in str(number)),
+        "fun_fact": get_fun_fact(number)
+    }
+    
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
     
